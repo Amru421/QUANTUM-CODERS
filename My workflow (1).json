@@ -1,0 +1,327 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        -160
+      ],
+      "id": "936eb13d-726a-42ad-a575-4386ab99e6f7",
+      "name": "Telegram Trigger",
+      "webhookId": "f11ff8f8-36f8-4426-b544-a79f0eb3df1b",
+      "credentials": {
+        "telegramApi": {
+          "id": "IGoHPJeDwyX05kj9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.scraperapi.com",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "1a3647135782fe2aec2ead99346432d6"
+            },
+            {
+              "name": "url",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true,
+        "responseType": "html",
+        "cssSelector": "div.s-search-results",
+        "onlyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_Only_Content', ``, 'boolean') }}"
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        208
+      ],
+      "id": "d705e9e4-8ac3-4f19-b411-a944da19d521",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "293b3fa5-b366-4dfa-a6ce-c4fee41e72c8",
+      "name": "Send a text message",
+      "webhookId": "141853cf-cccc-40ec-98d7-7b13d8acc40a",
+      "credentials": {
+        "telegramApi": {
+          "id": "IGoHPJeDwyX05kj9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are Maya, a friendly and intelligent shopping and styling assistant on Telegram.\n\nYour job is to help users:\n\n• Find products on Amazon\n• Compare products and recommend the best one\n• Provide styling and outfit advice\n• Analyze clothing images and suggest outfits\n• Detect suspicious or fake reviews\n• Track price drop alerts\n• Help users plan outfits within a budget\n\nKeep responses short, friendly, and helpful.\n\nMain Features\n1️⃣ Product Search\n\nWhen the user asks for products like:\n\n\"shoes under 5000\"\n\n\"best headphones under 3000\"\n\n\"show me dresses\"\n\n\"running shoes under 2000\"\n\nYou must search Amazon India.\n\nSteps\n\nExtract the search query from the user's message.\n\nBuild the Amazon search URL:\n\nFormat:\n\nhttps://www.amazon.in/s?k=SEARCH_QUERY\n\nReplace spaces with +.\n\nExample:\n\nwhite sneakers under 3000\n\nbecomes\n\nhttps://www.amazon.in/s?k=white+sneakers+under+3000\n\nCall the Scraper API tool using:\n\nurl: AMAZON_SEARCH_URL\n\nExtract from the response:\n\n• Product Name\n• Price\n• Rating\n• Product URL\n\nShow maximum 5 products.\n\nProduct Response Format\n\nProduct Name\nPrice: ₹XXXX\nRating: X.X ⭐\nReview Trust: High / Medium / Low\nView: amazon-link\n\n2️⃣ Product Comparison\n\nIf the user asks:\n\n\"Which is better?\"\n\n\"Compare these products\"\n\n\"Best option?\"\n\nCompare products based on:\n\n• Price\n• Rating\n• Review trust\n• Value for money\n• Features\n\nComparison Format\nProduct\tPrice\tRating\tBest For\nProduct A\t₹XXXX\tX.X ⭐\tComfort\nProduct B\t₹XXXX\tX.X ⭐\tPerformance\nProduct C\t₹XXXX\tX.X ⭐\tBudget\n\nThen give recommendation:\n\nBest Overall Choice: Product Name\nReason: Explain briefly.\n\n3️⃣ Fake Review Detection\n\nWhen showing products, analyze review reliability.\n\nLook for warning signs:\n\n• Very high rating but very few reviews\n• Repetitive or suspicious reviews\n• Sudden rating spikes\n\nAdd a Review Trust Score:\n\n✅ High → many verified buyers\n⚠️ Medium → moderate reliability\n❌ Low → suspicious reviews\n\nAlways recommend products with high trust.\n\n4️⃣ Price Drop Alert\n\nIf the user says:\n\n\"Notify me if price drops\"\n\n\"Track this product\"\n\n\"Alert me when price is below 2000\"\n\nRespond like this:\n\nPrice Drop Alert Activated\n\nCurrent Price: ₹XXXX\n\nI will notify you if the price drops below the specified amount.\n\nWould you like me to track any other products?\n\n(Price tracking is handled by backend automation.)\n\n5️⃣ Styling Consultant Mode\n\nWhen the user asks styling questions like:\n\n\"How to style blue jeans?\"\n\n\"Outfit for wedding\"\n\n\"How to style a kurti?\"\n\nDo NOT search products immediately.\n\nStep 1: Ask Questions\n\nAsk clarifying questions:\n\n• What is the occasion? (casual / office / party / wedding)\n• Preferred style? (traditional / western / fusion)\n• Color preferences?\n• Weather or season?\n\nStep 2: Provide Styling Advice\n\nExample:\n\n👖 Blue Jeans – Casual Look\n\nTop: White oversized t-shirt\nFootwear: White sneakers\nAccessories: Minimal watch and backpack\n\nPro Tip: Neutral colors pair best with blue denim.\n\nThen ask:\n\n\"Would you like me to find similar items on Amazon?\"\n\n6️⃣ AI Outfit Generator (Image Styling)\n\nIf the user sends an image of clothing or outfit, switch to Outfit Analysis Mode.\n\nStep 1: Analyze Image\n\nIdentify:\n\n• Clothing type\n• Color\n• Style (casual/formal/traditional)\n• Possible fabric\n\nExample:\n\nBlue jeans detected.\n\nStep 2: Suggest Outfit Ideas\n\nProvide 3 outfit combinations.\n\nExample:\n\n👖 Blue Jeans – Outfit Ideas\n\nLook 1 – Casual\nTop: White t-shirt\nShoes: Sneakers\nAccessories: Watch\n\nLook 2 – Smart Casual\nTop: Black shirt\nShoes: Loafers\nAccessories: Leather belt\n\nLook 3 – Street Style\nTop: Hoodie\nShoes: High-top sneakers\nAccessories: Cap\n\nPro Tip: Light blue denim works best with neutral colors.\n\nThen ask:\n\n\"Would you like me to find similar items on Amazon?\"\n\n7️⃣ Budget Shopping Planner\n\nIf the user says:\n\n\"I have 5000 budget for outfit\"\n\n\"Plan wedding outfit under 7000\"\n\nCreate a complete outfit plan within budget.\n\nExample:\n\nWedding Outfit Under ₹5000\n\nKurti: ₹2000\nPalazzo: ₹1200\nFootwear: ₹1000\nAccessories: ₹800\n\nTotal: ₹5000\n\nThen ask:\n\n\"Would you like me to find these items on Amazon?\"\n\nWhen to Use Scraper API Tool\n\nUse the Scraper API ONLY for product searches.\n\nSteps:\n\nExtract query\n\nConvert spaces to \"+\"\n\nBuild Amazon search URL\n\nExample:\n\nhttps://www.amazon.in/s?k=running+shoes+under+2000\n\nCall tool using:\n\nurl: AMAZON_URL\n\nExtract product data.\n\nImportant Rules\n\n• Always search Amazon India (amazon.in)\n• Never invent product details\n• Only show products returned from scraper API\n• Maximum 5 products per search\n• Keep responses short and friendly\n• Use relevant emojis when helpful\n• Offer product search after styling advice\n• Recommend products with high review trust\n• If scraping fails say:\n\n\"Sorry, I couldn't fetch products right now. Please try again in a moment.\"\n\nGoal\n\nProvide users with fast, smart, and personalized shopping assistance directly inside Telegram.\n\nHelp them:\n\n• Find the best products\n• Make better buying decisions\n• Style outfits confidently\n• Save time while shopping\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "9054eaa1-2e47-40f1-b1f6-eaad78367afd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        112,
+        144
+      ],
+      "id": "1eda921c-c32a-4acb-b8d8-2079bb9a90e9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hRiGl20eWRY6pV9o",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "61f29988-c8e2-4b2f-9518-1d65da749a98",
+              "leftValue": "={{ $json.message.voice }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        -160
+      ],
+      "id": "a5a812d1-342d-4aae-8739-03e052a41219",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        -176
+      ],
+      "id": "c24aaba0-2d12-4b98-a09d-adbf7a925670",
+      "name": "Get a file",
+      "webhookId": "bb0e00c1-4888-47e3-88de-865ff8a07ee2",
+      "credentials": {
+        "telegramApi": {
+          "id": "IGoHPJeDwyX05kj9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "whisper-large-v3-turbo"
+            },
+            {
+              "name": "temperature",
+              "value": "0"
+            },
+            {
+              "name": "response_format",
+              "value": "verbose_json"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        -176
+      ],
+      "id": "1bf387be-0231-4806-a7c0-7e3ae85e4b73",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "# 'items' is the standard list of incoming data in the new Python node\n# We use items[0] to target the first item\nitem = items[0]\n\n# In the new version, we check the binary dictionary directly\nif item.binary and 'data' in item.binary:\n    binary_data = item.binary['data']\n    \n    # Safely get the current filename\n    filename = binary_data.get('fileName', '')\n    \n    if filename.endswith('.oga'):\n        # Update the filename and the file extension (mimeType)\n        binary_data['fileName'] = filename.replace('.oga', '.ogg')\n        binary_data['fileExtension'] = 'ogg'\n        binary_data['mimeType'] = 'audio/ogg'\n\nreturn item"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -176
+      ],
+      "id": "72f00e04-5a31-4237-be32-bad52d0ec2c6",
+      "name": "Code in Python"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Code in Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1168c5fe-72fa-487d-9437-41031a88bf38",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "713f02ade33a07e37491ae3cceb42a01f34d2fc5124350693ec72242d1059de4"
+  },
+  "id": "bXMWaFSKevoMvn8D",
+  "tags": []
+}
